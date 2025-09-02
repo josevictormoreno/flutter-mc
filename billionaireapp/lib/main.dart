@@ -1,4 +1,7 @@
+import 'package:billionaireapp/add_money_widget.dart';
+import 'package:billionaireapp/balance_view.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(Myapp());
@@ -14,9 +17,26 @@ class Myapp extends StatefulWidget {
 class _MyappState extends State<Myapp> {
   double balance = 0;
 
-  void addMoney() {
+  void addMoney() async {
     setState(() {
       balance += 500;
+    });
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('balance', balance);
+  }
+
+  @override
+  void initState() {
+    loadBalance();
+    super.initState();
+  }
+
+  void loadBalance() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      balance = prefs.getDouble('balance') ?? 0;
     });
   }
 
@@ -33,31 +53,8 @@ class _MyappState extends State<Myapp> {
           width: double.infinity,
           child: Column(
             children: [
-              Expanded(
-                flex: 9,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Balance part'),
-                    SizedBox(height: 20),
-                    Text('$balance'),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: ElevatedButton(
-                  onPressed: addMoney,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[400],
-                    minimumSize: Size(double.infinity, 0),
-                  ),
-                  child: Text(
-                    'Add Money',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
+              BalanceView(balance: balance),
+              AddMoneyWidget(addMoneyFunction: addMoney),
             ],
           ),
         ),
